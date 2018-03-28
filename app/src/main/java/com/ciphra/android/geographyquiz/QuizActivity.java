@@ -19,7 +19,7 @@ public class QuizActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-
+    //test test
             }
         });
         mFalseButton = (Button) findViewById(R.id.false_button);
