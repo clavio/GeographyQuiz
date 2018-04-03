@@ -33,6 +33,9 @@ public class QuizActivity extends AppCompatActivity {
 
     private boolean[] disabledQuestions;
 
+    private int correctAnswers = 0;
+    private int incorrectAnswers = 0;
+
     private int mCurrentIndex = 0;
 
     @Override
@@ -49,7 +52,7 @@ public class QuizActivity extends AppCompatActivity {
         mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
 
-        checkDisabled();
+       // checkDisabled();
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener(){
 
@@ -147,7 +150,7 @@ public class QuizActivity extends AppCompatActivity {
     private void updateQuestion(){
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
-        checkDisabled();
+     //   checkDisabled();
     }
 
     private void checkAnswer(boolean userPressedTrue){
@@ -156,13 +159,24 @@ public class QuizActivity extends AppCompatActivity {
         disabledQuestions[mCurrentIndex] = true;
         checkDisabled();
         if(userPressedTrue == answerIsTrue){
+            ++correctAnswers;
             messageResId = R.string.correct_toast;
         }
         else{
+            ++incorrectAnswers;
             messageResId = R.string.incorrect_toast;
         }
-
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT);
+      //  grade();
+    }
+
+    public void grade(){
+        if(correctAnswers + incorrectAnswers  == mQuestionBank.length){
+            double percentage = correctAnswers/mQuestionBank.length;
+            Toast.makeText(this, String.valueOf(percentage), Toast.LENGTH_SHORT);
+            Log.e("adsfdsa0", String.valueOf(percentage));
+
+        }
     }
 
     private void checkDisabled(){
