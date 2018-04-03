@@ -12,12 +12,15 @@ import android.widget.Toast;
 
 public class QuizActivity extends AppCompatActivity {
 
+
+    private static final String TAG = "QuizActivity";
+    private static final String KEY_INDEX = "index";
+
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mNextButton;
     private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
-    private static final String TAG = "QuizActivity";
 
     private Question[] mQuestionBank = new Question[] {
       new Question(R.string.question_oceans, true),
@@ -28,6 +31,8 @@ public class QuizActivity extends AppCompatActivity {
 
     };
 
+    private boolean[] disabledQuestions;
+
     private int mCurrentIndex = 0;
 
     @Override
@@ -36,6 +41,15 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
 
+        disabledQuestions = new boolean[mQuestionBank.length];
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+
+        }
+        mTrueButton = (Button) findViewById(R.id.true_button);
+        mFalseButton = (Button) findViewById(R.id.false_button);
+
+        checkDisabled();
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener(){
 
@@ -45,7 +59,6 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
         updateQuestion();
-        mTrueButton = (Button) findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -54,7 +67,6 @@ public class QuizActivity extends AppCompatActivity {
 
             }
         });
-        mFalseButton = (Button) findViewById(R.id.false_button);
         mFalseButton.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -111,6 +123,14 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onDestroy() called");
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        super.onSaveInstanceState(savedInstanceState);
+        Log.i(TAG, "onSaveInstanceState");
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+
+    }
+
     private void nextQuestion() {
         mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
         updateQuestion();
@@ -127,11 +147,14 @@ public class QuizActivity extends AppCompatActivity {
     private void updateQuestion(){
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
+        checkDisabled();
     }
 
     private void checkAnswer(boolean userPressedTrue){
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId = 0;
+        disabledQuestions[mCurrentIndex] = true;
+        checkDisabled();
         if(userPressedTrue == answerIsTrue){
             messageResId = R.string.correct_toast;
         }
@@ -140,6 +163,17 @@ public class QuizActivity extends AppCompatActivity {
         }
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT);
+    }
+
+    private void checkDisabled(){
+        if(disabledQuestions[mCurrentIndex]){
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        }
+        else{
+            mTrueButton.setEnabled(true);
+            mFalseButton.setEnabled(true);
+        }
     }
 }
 
