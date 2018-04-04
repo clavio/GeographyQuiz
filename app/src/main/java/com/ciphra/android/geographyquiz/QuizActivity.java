@@ -1,5 +1,6 @@
 package com.ciphra.android.geographyquiz;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,11 +16,14 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mNextButton;
     private ImageButton mPreviousButton;
+    private Button mCheatButton;
+
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = new Question[] {
@@ -51,6 +55,16 @@ public class QuizActivity extends AppCompatActivity {
         }
         mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
+            }
+        });
 
        // checkDisabled();
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -157,7 +171,7 @@ public class QuizActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId = 0;
         disabledQuestions[mCurrentIndex] = true;
-        checkDisabled();
+      //  checkDisabled();
         if(userPressedTrue == answerIsTrue){
             ++correctAnswers;
             messageResId = R.string.correct_toast;
