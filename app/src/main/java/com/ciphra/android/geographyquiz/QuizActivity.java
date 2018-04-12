@@ -1,5 +1,6 @@
 package com.ciphra.android.geographyquiz;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +17,8 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String NEW_KEY = "index2";
+
     private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
@@ -23,6 +26,9 @@ public class QuizActivity extends AppCompatActivity {
     private ImageButton mNextButton;
     private ImageButton mPreviousButton;
     private Button mCheatButton;
+
+    private boolean[] mCheatArray;
+    private boolean mIsCheater;
 
     private TextView mQuestionTextView;
 
@@ -49,9 +55,10 @@ public class QuizActivity extends AppCompatActivity {
         setContentView(R.layout.activity_quiz);
 
         disabledQuestions = new boolean[mQuestionBank.length];
+        mCheatArray = new boolean[mQuestionBank.length];
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
-
+            mCheatArray = savedInstanceState.getBooleanArray(NEW_KEY);
         }
         mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
@@ -97,6 +104,7 @@ public class QuizActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
+             //   mIsCheater = false;
                 nextQuestion();
             }
         });
@@ -145,6 +153,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putBooleanArray(NEW_KEY, mCheatArray);
 
     }
 
@@ -170,7 +179,7 @@ public class QuizActivity extends AppCompatActivity {
     private void checkAnswer(boolean userPressedTrue){
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
         int messageResId = 0;
-        disabledQuestions[mCurrentIndex] = true;
+       // disabledQuestions[mCurrentIndex] = true;
       //  checkDisabled();
         if(userPressedTrue == answerIsTrue){
             ++correctAnswers;
@@ -180,27 +189,27 @@ public class QuizActivity extends AppCompatActivity {
             ++incorrectAnswers;
             messageResId = R.string.incorrect_toast;
         }
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT);
+        if(mCheatArray[mCurrentIndex]){
+            messageResId = R.string.judgment_toast;
+            mCheatArray[mCurrentIndex] = false;
+        }
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
       //  grade();
     }
 
-    public void grade(){
-        if(correctAnswers + incorrectAnswers  == mQuestionBank.length){
-            double percentage = correctAnswers/mQuestionBank.length;
-            Toast.makeText(this, String.valueOf(percentage), Toast.LENGTH_SHORT);
-            Log.e("adsfdsa0", String.valueOf(percentage));
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode != Activity.RESULT_OK){
+            return;
         }
-    }
-
-    private void checkDisabled(){
-        if(disabledQuestions[mCurrentIndex]){
-            mTrueButton.setEnabled(false);
-            mFalseButton.setEnabled(false);
-        }
-        else{
-            mTrueButton.setEnabled(true);
-            mFalseButton.setEnabled(true);
+        if(requestCode == REQUEST_CODE_CHEAT){
+            if (data == null){
+                return;
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data);
+            if(mIsCheater){
+                mCheatArray[mCurrentIndex] = true;
+            }
         }
     }
 }
